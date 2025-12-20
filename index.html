@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Examination Platform</title>
+    <script src="jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        /* LOGIN PAGE STYLES */
+        .login-page {
+            padding: 60px 40px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .login-page h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .login-page p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.05em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .error-message {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #c62828;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* WELCOME PAGE STYLES */
+        .welcome-page {
+            padding: 40px;
+        }
+
+        .welcome-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-header h2 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .student-info {
+            background: #f5f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+
+        .student-info h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .student-info p {
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .student-info strong {
+            color: #333;
+        }
+
+        .instructions-section {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .instructions-section h3 {
+            color: #667eea;
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions-list {
+            list-style: none;
+            counter-reset: instruction-counter;
+        }
+
+        .instructions-list li {
+            counter-increment: instruction-counter;
+            margin-bottom: 20px;
+            padding-left: 50px;
+            position: relative;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        .instructions-list li::before {
+            content: counter(instruction-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .warning-box ul {
+            margin-left: 20px;
+            color: #856404;
+            line-height: 1.7;
+        }
+
+        .task-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .task-card {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+        }
+
+        .task-card h4 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .task-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .task-card .word-req {
+            background: #667eea;
+            color: white;
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .start-button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f5f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            transition: border-color 0.3s ease;
+        }
+
+        .checkbox-container:hover {
+            border-color: #667eea;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            cursor: pointer;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .timer-section {
+            background: #f5f7ff;
+            padding: 20px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer-icon {
+            font-size: 1.2em;
+        }
+
+        .word-count-summary {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .count-item {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .count-item span {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .task-page {
+            display: none;
+        }
+
+        .task-page.active {
+            display: block;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .task-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .task-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .task-header p {
+            font-size: 1.05em;
+            opacity: 0.95;
+        }
+
+        .prompt-box {
+            background: #f9f9f9;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .prompt-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .prompt-content {
+            margin-top: 10px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .subtask {
+            background: #f5f7ff;
+            border-left: 4px solid #764ba2;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .subtask-title {
+            color: #667eea;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subtask-instruction {
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .word-requirement {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .writing-area {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.05em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .char-counter {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .word-count {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .word-count.warning {
+            color: #ff9800;
+        }
+
+        .word-count.error {
+            color: #f44336;
+        }
+
+        .word-count.success {
+            color: #4caf50;
+        }
+
+        .char-count {
+            color: #666;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0f0;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .tips-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .tips-section h3 {
+            color: #1976d2;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+
+        .tips-section ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .progress-step.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .progress-step.completed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .submission-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .submission-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .submission-summary {
+            background: #f5f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #856404;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #155724;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .saved-indicator {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            animation: slideIn 0.3s ease;
+        }
+
+        .saved-indicator.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .timer {
+                font-size: 1.4em;
+            }
+
+            .timer-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .navigation-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .progress-indicator {
+                flex-direction: column;
+            }
+
+            .login-page {
+                padding: 40px 20px;
+            }
+
+            .welcome-page {
+                padding: 20px;
+            }
+
+            .task-overview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LOGIN PAGE -->
+        <div class="page active" id="loginPage">
+            <div class="header">
+                <h1>✍️ Writing Examination</h1>
+                <p>Student Authentication</p>
+            </div>
+            <div class="login-page">
+                <h2>🔐 Student Login</h2>
+                <p>Please enter your full name to access the examination. Your name must match our registered student list.</p>
+                
+                <div class="error-message" id="loginError">
+                    <strong>❌ Access Denied:</strong> Your name is not found in the registered student list. Please check your spelling and try again.
+                </div>
+
+                <form onsubmit="checkStudent(event)">
+                    <div class="form-group">
+                        <label for="studentName">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="studentName" 
+                            placeholder="Enter your full name" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentId">Student ID</label>
+                        <input 
+                            type="text" 
+                            id="studentId" 
+                            placeholder="Enter your student ID" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Verify & Continue →
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- WELCOME PAGE -->
+        <div class="page" id="welcomePage">
+            <div class="header">
+                <h1>✍️ Writing Examination</h1>
+                <p>Two Tasks • Total Time: 1 Hour</p>
+            </div>
+            
+            <div class="welcome-page">
+                <div class="welcome-header">
+                    <h2>👋 Welcome to Your Writing Examination</h2>
+                    <p>Please read all instructions carefully before you begin</p>
+                </div>
+
+                <div class="student-info">
+                    <h3>📋 Student Information</h3>
+                    <p><strong>Name:</strong> <span id="displayName"></span></p>
+                    <p><strong>Student ID:</strong> <span id="displayId"></span></p>
+                    <p><strong>Date:</strong> <span id="displayDate"></span></p>
+                </div>
+
+                <div class="instructions-section">
+                    <h3>📖 Examination Instructions</h3>
+                    <ul class="instructions-list">
+                        <li><strong>Total Time:</strong> You have 60 minutes to complete all tasks. The timer will start as soon as you click "Start Examination".</li>
+                        <li><strong>Navigation:</strong> You can move between tasks at any time using the navigation buttons or progress indicators at the top of each page.</li>
+                        <li><strong>Saving Work:</strong> Your work is NOT automatically saved. Use the "Download Progress" button frequently to save your work as a PDF file.</li>
+                        <li><strong>Word Counts:</strong> Pay attention to the word count requirements for each task. Word counts are displayed in real-time as you type.</li>
+                        <li><strong>Submission:</strong> When you finish all tasks, click "Submit Examination" to generate your final PDF submission.</li>
+                        <li><strong>Time Warnings:</strong> You will receive alerts when 5 minutes and 1 minute remain.</li>
+                        <li><strong>Auto-Submit:</strong> Your work will be automatically submitted when time runs out.</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h4>⚠️ Important Reminders</h4>
+                    <ul>
+                        <li>Do NOT close your browser or refresh the page during the examination</li>
+                        <li>Ensure you have a stable internet connection</li>
+                        <li>Download your progress regularly using the "Download Progress" button</li>
+                        <li>Read all prompts and instructions carefully before writing</li>
+                        <li>Manage your time wisely across all three tasks</li>
+                    </ul>
+                </div>
+
+                <div class="task-overview">
+                    <div class="task-card">
+                        <h4>📧 Task 1.1</h4>
+                        <p>Email to a Friend</p>
+                        <p>Write an informal email responding to a tournament cancellation notice.</p>
+                        <span class="word-req">~50 words</span>
+                    </div>
+
+                    <div class="task-card">
+                        <h4>📧 Task 1.2</h4>
+                        <p>Email to Club President</p>
+                        <p>Write a formal email to the club president about the same situation.</p>
+                        <span class="word-req">120-150 words</span>
+                    </div>
+
+                    <div class="task-card">
+                        <h4>💬 Task 2</h4>
+                        <p>Discussion Post</p>
+                        <p>Write your opinion on paper books vs. e-books for an online discussion forum.</p>
+                        <span class="word-req">180-200 words</span>
+                    </div>
+                </div>
+
+                <div class="checkbox-container" onclick="toggleCheckbox()">
+                    <input type="checkbox" id="agreeCheckbox">
+                    <label for="agreeCheckbox">I have read and understood all the instructions above, and I am ready to begin the examination.</label>
+                </div>
+
+                <div class="start-button-container">
+                    <button class="btn btn-primary" id="startButton" onclick="startExamination()" disabled style="font-size: 1.2em; padding: 18px 40px;">
+                        🚀 Start Examination
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXAM PAGE -->
+        <div class="page" id="examPage">
+            <div class="header">
+                <h1>✍️ Writing Examination</h1>
+                <p>Two Tasks • Total Time: 1 Hour</p>
+            </div>
+
+            <div class="timer-section">
+                <div class="timer">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="timerDisplay">60:00</span>
+                </div>
+                <div class="word-count-summary">
+                    <div class="count-item">
+                        <small>Task 1.1:</small> <span id="task1_1Count">0</span> words
+                    </div>
+                    <div class="count-item">
+                        <small>Task 1.2:</small> <span id="task1_2Count">0</span> words
+                    </div>
+                    <div class="count-item">
+                        <small>Task 2:</small> <span id="task2Count">0</span> words
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="progress-indicator">
+                    <div class="progress-step active" id="step1" onclick="goToPage(1)">Task 1.1</div>
+                    <div class="progress-step" id="step2" onclick="goToPage(2)">Task 1.2</div>
+                    <div class="progress-step" id="step3" onclick="goToPage(3)">Task 2</div>
+                </div>
+
+                <!-- PAGE 1: TASK 1.1 -->
+                <div class="task-page active" id="page1">
+                    <div class="task-header">
+                        <h2>📧 TASK 1.1: Email to a Friend</h2>
+                        <p>Write an informal email based on the prompt</p>
+                    </div>
+
+                    <div class="prompt-box">
+                        <span class="prompt-label">📬 EMAIL PROMPT</span>
+                        <div class="prompt-content">
+                            <p><strong>Dear Member,</strong></p>
+                            <p>We regret to inform you that the football tournament scheduled for this weekend has been canceled due to bad weather. The heavy rain has made the pitch unsafe for play. We plan to organize the tournament again in two weeks' time, weather permitting. Please let us know whether you would like a refund or to keep your registration for the new date.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtask">
+                        <div class="subtask-instruction">
+                            Write a short email to your friend. Tell your friend your feelings about this and what you plan to do.
+                        </div>
+                        <div class="word-requirement">
+                            📝 Required: About 50 words
+                        </div>
+
+                        <div class="tips-section">
+                            <h3>💡 Writing Tips:</h3>
+                            <ul>
+                                <li>Use informal, friendly language</li>
+                                <li>Express your feelings about the cancellation</li>
+                                <li>Mention what you plan to do (refund or wait)</li>
+                                <li>Keep it brief and conversational</li>
+                            </ul>
+                        </div>
+
+                        <div class="writing-area">
+                            <textarea id="task1_1" placeholder="Start writing your email to your friend here..." style="min-height: 200px;"></textarea>
+                            <div class="char-counter">
+                                <span class="word-count" id="task1_1WordCount">0 words (Target: ~50)</span>
+                                <span class="char-count" id="task1_1CharCount">0 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" onclick="downloadWork()">💾 Download Progress</button>
+                        <button class="btn btn-primary" onclick="goToPage(2)">Next: Task 1.2 →</button>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: TASK 1.2 -->
+                <div class="task-page" id="page2">
+                    <div class="task-header">
+                        <h2>📧 TASK 1.2: Email to the Club President</h2>
+                        <p>Write a formal email based on the same prompt</p>
+                    </div>
+
+                    <div class="prompt-box">
+                        <span class="prompt-label">📬 EMAIL PROMPT</span>
+                        <div class="prompt-content">
+                            <p><strong>Dear Member,</strong></p>
+                            <p>We regret to inform you that the football tournament scheduled for this weekend has been canceled due to bad weather. The heavy rain has made the pitch unsafe for play. We plan to organize the tournament again in two weeks' time, weather permitting. Please let us know whether you would like a refund or to keep your registration for the new date.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtask">
+                        <div class="subtask-instruction">
+                            Write an email to the president of the club. Tell them your thoughts about this and what you would like to do.
+                        </div>
+                        <div class="word-requirement">
+                            📝 Required: 120-150 words
+                        </div>
+
+                        <div class="tips-section">
+                            <h3>💡 Writing Tips:</h3>
+                            <ul>
+                                <li>Use formal, polite language</li>
+                                <li>Start with an appropriate greeting</li>
+                                <li>Express understanding about the cancellation</li>
+                                <li>Clearly state your preference (refund or reschedule)</li>
+                                <li>End with a polite closing</li>
+                            </ul>
+                        </div>
+
+                        <div class="writing-area">
+                            <textarea id="task1_2" placeholder="Start writing your formal email to the club president here..." style="min-height: 300px;"></textarea>
+                            <div class="char-counter">
+                                <span class="word-count" id="task1_2WordCount">0 words (Target: 120-150)</span>
+                                <span class="char-count" id="task1_2CharCount">0 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" onclick="goToPage(1)">← Previous: Task 1.1</button>
+                        <button class="btn btn-secondary" onclick="downloadWork()">💾 Download Progress</button>
+                        <button class="btn btn-primary" onclick="goToPage(3)">Next: Task 2 →</button>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: TASK 2 -->
+                <div class="task-page" id="page3">
+                    <div class="task-header">
+                        <h2>💬 TASK 2: Online Discussion Post</h2>
+                        <p>Express your opinion on a given topic</p>
+                    </div>
+
+                    <div class="prompt-box">
+                        <span class="prompt-label">💭 DISCUSSION TOPIC</span>
+                        <div class="prompt-content">
+                            <p><strong>You are posting in an online discussion for students.</strong></p>
+                            <p><strong>The topic is: "Is it better to read paper books or e-books?"</strong></p>
+                            <p>Write your response, giving reasons and examples.</p>
+                        </div>
+                    </div>
+
+                    <div class="word-requirement">
+                        📝 Required: 180-200 words
+                    </div>
+
+                    <div class="tips-section">
+                        <h3>💡 Writing Tips:</h3>
+                        <ul>
+                            <li>State your position clearly in the introduction</li>
+                            <li>Provide at least 2-3 reasons with supporting examples</li>
+                            <li>Consider mentioning both sides before stating your preference</li>
+                            <li>Use appropriate discussion language (e.g., "In my opinion...", "I believe...")</li>
+                            <li>Conclude by summarizing your main points</li>
+                            <li>Use paragraphs to organize your ideas</li>
+                        </ul>
+                    </div>
+
+                    <div class="writing-area">
+                        <textarea id="task2" placeholder="Start writing your discussion post here..." style="min-height: 350px;"></textarea>
+                        <div class="char-counter">
+                            <span class="word-count" id="task2WordCount">0 words (Target: 180-200)</span>
+                            <span class="char-count" id="task2CharCount">0 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" onclick="goToPage(2)">← Previous: Task 1.2</button>
+                        <button class="btn btn-secondary" onclick="downloadWork()">💾 Download Progress</button>
+                        <button class="btn btn-success" onclick="showSubmissionModal()">📤 Submit Examination</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMISSION MODAL -->
+    <div class="submission-modal" id="submissionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Review Your Submission</h2>
+                <p>Please review your work before final submission</p>
+            </div>
+
+            <div id="modalContent"></div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeSubmissionModal()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" onclick="finalSubmit()" style="flex: 1;">Confirm & Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAVED INDICATOR -->
+    <div class="saved-indicator" id="savedIndicator">
+        ✓ Work downloaded successfully!
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        // REGISTERED STUDENTS LIST
+        const registeredStudents = [
+            { name: "John Smith", id: "STU001" },
+            { name: "Emma Johnson", id: "STU002" },
+            { name: "Michael Brown", id: "STU003" },
+            { name: "Sarah Davis", id: "STU004" },
+            { name: "James Wilson", id: "STU005" },
+            { name: "Lisa Anderson", id: "STU006" },
+            { name: "Robert Taylor", id: "STU007" },
+            { name: "Jessica Martinez", id: "STU008" },
+            { name: "David Thomas", id: "STU009" },
+            { name: "Maria Garcia", id: "STU010" },
+            // Add more students as needed
+        ];
+
+        let totalSeconds = 60 * 60;
+        let timerInterval;
+        let currentPage = 1;
+        let currentStudentName = '';
+        let currentStudentId = '';
+        let examStartTime = null;
+
+        // ============================================================
+        // AUTHENTICATION
+        // ============================================================
+        function checkStudent(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('studentName').value.trim();
+            const id = document.getElementById('studentId').value.trim();
+            const errorMessage = document.getElementById('loginError');
+
+            // Check if student exists in the list
+            const student = registeredStudents.find(s => 
+                s.name.toLowerCase() === name.toLowerCase() && 
+                s.id.toLowerCase() === id.toLowerCase()
+            );
+
+            if (student) {
+                // Student found - proceed to welcome page
+                currentStudentName = student.name;
+                currentStudentId = student.id;
+                
+                document.getElementById('displayName').textContent = student.name;
+                document.getElementById('displayId').textContent = student.id;
+                document.getElementById('displayDate').textContent = new Date().toLocaleString();
+                
+                errorMessage.classList.remove('show');
+                showPage('welcomePage');
+            } else {
+                // Student not found - show error
+                errorMessage.classList.add('show');
+                document.getElementById('studentName').value = '';
+                document.getElementById('studentId').value = '';
+                document.getElementById('studentName').focus();
+            }
+        }
+
+        // ============================================================
+        // PAGE MANAGEMENT
+        // ============================================================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function toggleCheckbox() {
+            const checkbox = document.getElementById('agreeCheckbox');
+            checkbox.checked = !checkbox.checked;
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const checkbox = document.getElementById('agreeCheckbox');
+            const startButton = document.getElementById('startButton');
+            startButton.disabled = !checkbox.checked;
+        }
+
+        document.getElementById('agreeCheckbox').addEventListener('change', updateStartButton);
+
+        function startExamination() {
+            examStartTime = new Date();
+            showPage('examPage');
+            startTimer();
+        }
+
+        // ============================================================
+        // TASK PAGE NAVIGATION
+        // ============================================================
+        function goToPage(pageNum) {
+            document.querySelectorAll('.task-page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            document.getElementById('page' + pageNum).classList.add('active');
+            currentPage = pageNum;
+
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                step.classList.remove('active');
+                if (index + 1 === pageNum) {
+                    step.classList.add('active');
+                }
+            });
+
+            updateProgressSteps();
+            window.scrollTo(0, 0);
+        }
+
+        // ============================================================
+        // TIMER FUNCTIONALITY
+        // ============================================================
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                totalSeconds--;
+                updateTimerDisplay();
+
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmit();
+                } else if (totalSeconds === 300) {
+                    alert('⚠️ 5 minutes remaining!');
+                } else if (totalSeconds === 60) {
+                    alert('⚠️ 1 minute remaining!');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timerDisplay').textContent = display;
+
+            const timerElement = document.getElementById('timerDisplay');
+            if (totalSeconds <= 300) {
+                timerElement.style.color = '#f44336';
+            } else if (totalSeconds <= 600) {
+                timerElement.style.color = '#ff9800';
+            }
+        }
+
+        // ============================================================
+        // WORD AND CHARACTER COUNTING
+        // ============================================================
+        function countWords(text) {
+            text = text.trim();
+            if (text === '') return 0;
+            return text.split(/\s+/).length;
+        }
+
+        function updateWordCount(textareaId, countId, summaryId, min, max) {
+            const textarea = document.getElementById(textareaId);
+            const text = textarea.value;
+            const wordCount = countWords(text);
+            const charCount = text.length;
+
+            const wordCountElement = document.getElementById(countId);
+            const charCountElement = document.getElementById(countId.replace('WordCount', 'CharCount'));
+            const summaryElement = document.getElementById(summaryId);
+
+            wordCountElement.textContent = `${wordCount} words (Target: ${min}${max ? '-' + max : '+'})`;
+            charCountElement.textContent = `${charCount} characters`;
+            summaryElement.textContent = wordCount;
+
+            wordCountElement.classList.remove('warning', 'error', 'success');
+            if (wordCount < min * 0.8) {
+                wordCountElement.classList.add('error');
+            } else if (wordCount < min || (max && wordCount > max)) {
+                wordCountElement.classList.add('warning');
+            } else {
+                wordCountElement.classList.add('success');
+            }
+
+            updateProgressSteps();
+        }
+
+        function updateProgressSteps() {
+            const task1_1Words = countWords(document.getElementById('task1_1').value);
+            const task1_2Words = countWords(document.getElementById('task1_2').value);
+            const task2Words = countWords(document.getElementById('task2').value);
+
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+
+            if (task1_1Words >= 40 && task1_1Words <= 60) {
+                step1.classList.add('completed');
+            } else {
+                step1.classList.remove('completed');
+            }
+
+            if (task1_2Words >= 120 && task1_2Words <= 150) {
+                step2.classList.add('completed');
+            } else {
+                step2.classList.remove('completed');
+            }
+
+            if (task2Words >= 180 && task2Words <= 200) {
+                step3.classList.add('completed');
+            } else {
+                step3.classList.remove('completed');
+            }
+        }
+
+        // ============================================================
+        // PDF GENERATION
+        // ============================================================
+        function generatePDF(isFinal = false) {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 20;
+            const maxWidth = pageWidth - (2 * margin);
+            let yPos = 20;
+
+            // Title
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            const title = isFinal ? 'WRITING EXAMINATION - FINAL SUBMISSION' : 'WRITING EXAMINATION - PROGRESS SAVE';
+            doc.text(title, pageWidth / 2, yPos, { align: 'center' });
+            yPos += 15;
+
+            // Student Info
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Student: ${currentStudentName}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Student ID: ${currentStudentId}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Date: ${new Date().toLocaleString()}`, margin, yPos);
+            yPos += 7;
+            
+            const timeUsed = isFinal ? (60 * 60 - totalSeconds) : 0;
+            const minutes = Math.floor(timeUsed / 60);
+            const seconds = timeUsed % 60;
+            
+            if (isFinal) {
+                doc.text(`Time Used: ${minutes} minutes ${seconds} seconds`, margin, yPos);
+            } else {
+                doc.text(`Time Remaining: ${Math.floor(totalSeconds / 60)} minutes`, margin, yPos);
+            }
+            yPos += 15;
+
+            // Task 1.1
+            const task1_1 = document.getElementById('task1_1').value;
+            const task1_1Words = countWords(task1_1);
+            
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('TASK 1.1: Email to a Friend', margin, yPos);
+            yPos += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Word Count: ${task1_1Words} words (Target: ~50 words)`, margin, yPos);
+            yPos += 10;
+
+            if (task1_1.trim()) {
+                const lines1_1 = doc.splitTextToSize(task1_1, maxWidth);
+                lines1_1.forEach(line => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    doc.text(line, margin, yPos);
+                    yPos += 7;
+                });
+            } else {
+                doc.setFont(undefined, 'italic');
+                doc.text('[No content yet]', margin, yPos);
+                doc.setFont(undefined, 'normal');
+                yPos += 7;
+            }
+            yPos += 10;
+
+            // Task 1.2
+            const task1_2 = document.getElementById('task1_2').value;
+            const task1_2Words = countWords(task1_2);
+            
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('TASK 1.2: Email to the Club President', margin, yPos);
+            yPos += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Word Count: ${task1_2Words} words (Target: 120-150 words)`, margin, yPos);
+            yPos += 10;
+
+            if (task1_2.trim()) {
+                const lines1_2 = doc.splitTextToSize(task1_2, maxWidth);
+                lines1_2.forEach(line => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    doc.text(line, margin, yPos);
+                    yPos += 7;
+                });
+            } else {
+                doc.setFont(undefined, 'italic');
+                doc.text('[No content yet]', margin, yPos);
+                doc.setFont(undefined, 'normal');
+                yPos += 7;
+            }
+            yPos += 10;
+
+            // Task 2
+            const task2 = document.getElementById('task2').value;
+            const task2Words = countWords(task2);
+            
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('TASK 2: Online Discussion Post', margin, yPos);
+            yPos += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Word Count: ${task2Words} words (Target: 180-200 words)`, margin, yPos);
+            yPos += 10;
+
+            if (task2.trim()) {
+                const lines2 = doc.splitTextToSize(task2, maxWidth);
+                lines2.forEach(line => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    doc.text(line, margin, yPos);
+                    yPos += 7;
+                });
+            } else {
+                doc.setFont(undefined, 'italic');
+                doc.text('[No content yet]', margin, yPos);
+                doc.setFont(undefined, 'normal');
+                yPos += 7;
+            }
+
+            if (isFinal) {
+                doc.addPage();
+                yPos = 20;
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('SUMMARY', margin, yPos);
+                yPos += 10;
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Total Words: ${task1_1Words + task1_2Words + task2Words} words`, margin, yPos);
+                yPos += 7;
+                doc.text(`Time Used: ${minutes} minutes ${seconds} seconds`, margin, yPos);
+            }
+
+            const filename = isFinal 
+                ? `${currentStudentId}_${currentStudentName.replace(/\s+/g, '_')}_FINAL_${new Date().getTime()}.pdf`
+                : `${currentStudentId}_${currentStudentName.replace(/\s+/g, '_')}_Progress_${new Date().getTime()}.pdf`;
+            
+            doc.save(filename);
+        }
+
+        function downloadWork() {
+            generatePDF(false);
+            
+            const indicator = document.getElementById('savedIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // ============================================================
+        // SUBMISSION MODAL
+        // ============================================================
+        function showSubmissionModal() {
+            const task1_1Words = countWords(document.getElementById('task1_1').value);
+            const task1_2Words = countWords(document.getElementById('task1_2').value);
+            const task2Words = countWords(document.getElementById('task2').value);
+
+            let warnings = [];
+            let canSubmit = true;
+
+            if (task1_1Words === 0) {
+                warnings.push('Task 1.1 is empty');
+                canSubmit = false;
+            } else if (task1_1Words < 40 || task1_1Words > 60) {
+                warnings.push(`Task 1.1: ${task1_1Words} words (recommended: ~50 words)`);
+            }
+
+            if (task1_2Words === 0) {
+                warnings.push('Task 1.2 is empty');
+                canSubmit = false;
+            } else if (task1_2Words < 100 || task1_2Words > 170) {
+                warnings.push(`Task 1.2: ${task1_2Words} words (recommended: 120-150 words)`);
+            }
+
+            if (task2Words === 0) {
+                warnings.push('Task 2 is empty');
+                canSubmit = false;
+            } else if (task2Words < 160 || task2Words > 220) {
+                warnings.push(`Task 2: ${task2Words} words (recommended: 180-200 words)`);
+            }
+
+            let modalHTML = '';
+
+            if (!canSubmit) {
+                modalHTML += `
+                    <div class="warning-message">
+                        <strong>⚠️ Cannot Submit:</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            ${warnings.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else if (warnings.length > 0) {
+                modalHTML += `
+                    <div class="warning-message">
+                        <strong>⚠️ Warnings:</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            ${warnings.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>You can still submit, but consider reviewing these tasks.</strong></p>
+                    </div>
+                `;
+            } else {
+                modalHTML += `
+                    <div class="success-message">
+                        <strong>✓ All tasks meet the requirements!</strong>
+                    </div>
+                `;
+            }
+
+            modalHTML += `
+                <div class="submission-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Student Name</span>
+                        <span class="summary-value">${currentStudentName}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Student ID</span>
+                        <span class="summary-value">${currentStudentId}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Task 1.1 (Email to Friend)</span>
+                        <span class="summary-value">${task1_1Words} words</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Task 1.2 (Email to President)</span>
+                        <span class="summary-value">${task1_2Words} words</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Task 2 (Discussion Post)</span>
+                        <span class="summary-value">${task2Words} words</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Words</span>
+                        <span class="summary-value">${task1_1Words + task1_2Words + task2Words} words</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Time Remaining</span>
+                        <span class="summary-value">${Math.floor(totalSeconds / 60)} minutes</span>
+                    </div>
+                </div>
+                
+                <div class="success-message">
+                    <h3 style="margin-bottom: 10px;">📄 PDF Submission</h3>
+                    <p>Your submission will be automatically downloaded as a PDF file.</p>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            
+            const submitButton = document.querySelector('.modal-actions .btn-primary');
+            if (!canSubmit) {
+                submitButton.disabled = true;
+                submitButton.style.opacity = '0.5';
+                submitButton.style.cursor = 'not-allowed';
+            } else {
+                submitButton.disabled = false;
+                submitButton.style.opacity = '1';
+                submitButton.style.cursor = 'pointer';
+            }
+
+            document.getElementById('submissionModal').classList.add('active');
+        }
+
+        function closeSubmissionModal() {
+            document.getElementById('submissionModal').classList.remove('active');
+        }
+
+        function finalSubmit() {
+            clearInterval(timerInterval);
+            
+            generatePDF(true);
+
+            alert('✅ Your examination has been submitted successfully!\n\nYour work has been downloaded as a PDF file.\n\nPlease save this file and submit it to your instructor.');
+            
+            document.querySelectorAll('textarea').forEach(ta => ta.disabled = true);
+            document.querySelectorAll('.btn').forEach(btn => btn.disabled = true);
+            
+            closeSubmissionModal();
+        }
+
+        function autoSubmit() {
+            alert('⏰ Time is up! Your examination will be automatically submitted.');
+            showSubmissionModal();
+            setTimeout(() => {
+                if (!document.getElementById('submissionModal').classList.contains('active')) {
+                    return;
+                }
+                const submitButton = document.querySelector('.modal-actions .btn-primary');
+                if (!submitButton.disabled) {
+                    finalSubmit();
+                }
+            }, 1000);
+        }
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+        document.getElementById('task1_1').addEventListener('input', () => {
+            updateWordCount('task1_1', 'task1_1WordCount', 'task1_1Count', 50, null);
+        });
+
+        document.getElementById('task1_2').addEventListener('input', () => {
+            updateWordCount('task1_2', 'task1_2WordCount', 'task1_2Count', 120, 150);
+        });
+
+        document.getElementById('task2').addEventListener('input', () => {
+            updateWordCount('task2', 'task2WordCount', 'task2Count', 180, 200);
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (document.getElementById('examPage').classList.contains('active')) {
+                const task1_1 = document.getElementById('task1_1').value;
+                const task1_2 = document.getElementById('task1_2').value;
+                const task2 = document.getElementById('task2').value;
+                
+                if (task1_1 || task1_2 || task2) {
+                    e.preventDefault();
+                    e.returnValue = 'You have unsaved work. Use "Download Progress" to save your work before leaving.';
+                    return e.returnValue;
+                }
+            }
+        });
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+        window.onload = function() {
+            // Only initialize word counts when on exam page
+            const examPage = document.getElementById('examPage');
+            if (examPage && examPage.classList.contains('active')) {
+                updateWordCount('task1_1', 'task1_1WordCount', 'task1_1Count', 50, null);
+                updateWordCount('task1_2', 'task1_2WordCount', 'task1_2Count', 120, 150);
+                updateWordCount('task2', 'task2WordCount', 'task2Count', 180, 200);
+            }
+        };
+    </script>
+</body>
+</html>
