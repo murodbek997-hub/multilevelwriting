@@ -10,6 +10,8 @@ const registeredStudents = [
     { name: "Turdaliyev Muhammadsharif", id: "STUDENT" },
     { name: "Shaxzodaxon Hamroliyeva", id: "ADM002" },
     { name: "Multilevel Winner", id: "STU001" },
-    { name: "Sunnat Hakimov", id: "TEACHER04" }
+    { name: "Sunnat Hakimov", id: "TEACHER04" },
+    { name: "Javohir Baratov", id: "TEACHER05" }
     // Add more students as needed
+
 ];
