@@ -13,8 +13,9 @@ const registeredStudents = [
     { name: "Sunnat Hakimov", id: "TEACHER04" },
     { name: "Javohir Baratov", id: "TEACHER05" },
     { name: "Tursunov Elyorbek", id: "TEACHER06" },
-    { name: "Ilhom Fozilov", id: "TEACHER07" },
+    { name: "Ilhom Fozilov", id: "TEACHER07" }
     // Add more students as needed
 ];
+
 
 
