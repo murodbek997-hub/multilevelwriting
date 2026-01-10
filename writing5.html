@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Examination Platform</title>
+    <script src="jspdf.umd.min.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- LOGIN PAGE -->
+        <div class="page active" id="loginPage">
+            <div class="header">
+                <h1>✍️ Writing Examination</h1>
+                <p>Student Authentication</p>
+            </div>
+            <div class="login-page">
+                <h2>🔐 Student Login</h2>
+                <p>Please enter your full name to access the examination. Your name must match our registered student list.</p>
+                
+                <div class="error-message" id="loginError">
+                    <strong>❌ Access Denied:</strong> Your name is not found in the registered student list. Please check your spelling and try again.
+                </div>
+
+                <form onsubmit="checkStudent(event)">
+                    <div class="form-group">
+                        <label for="studentName">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="studentName" 
+                            placeholder="Enter your full name" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentId">Student ID</label>
+                        <input 
+                            type="text" 
+                            id="studentId" 
+                            placeholder="Enter your student ID" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Verify & Continue →
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- WELCOME PAGE -->
+        <div class="page" id="welcomePage">
+            <div class="header">
+                <h1>✍️ Writing Examination</h1>
+                <p>Two Tasks • Total Time: 1 Hour</p>
+            </div>
+            
+            <div class="welcome-page">
+                <div class="welcome-header">
+                    <h2>👋 Welcome to Your Writing Examination</h2>
+                    <p>Please read all instructions carefully before you begin</p>
+                </div>
+
+                <div class="student-info">
+                    <h3>📋 Student Information</h3>
+                    <p><strong>Name:</strong> <span id="displayName"></span></p>
+                    <p><strong>Student ID:</strong> <span id="displayId"></span></p>
+                    <p><strong>Date:</strong> <span id="displayDate"></span></p>
+                </div>
+
+                <div class="instructions-section">
+                    <h3>📖 Examination Instructions</h3>
+                    <ul class="instructions-list">
+                        <li><strong>Total Time:</strong> You have 60 minutes to complete all tasks. The timer will start as soon as you click "Start Examination".</li>
+                        <li><strong>Navigation:</strong> You can move between tasks at any time using the navigation buttons or progress indicators at the top of each page.</li>
+                        <li><strong>Saving Work:</strong> Your work is NOT automatically saved. Use the "Download Progress" button frequently to save your work as a PDF file.</li>
+                        <li><strong>Word Counts:</strong> Pay attention to the word count requirements for each task. Word counts are displayed in real-time as you type.</li>
+                        <li><strong>Submission:</strong> When you finish all tasks, click "Submit Examination" to generate your final PDF submission.</li>
+                        <li><strong>Time Warnings:</strong> You will receive alerts when 5 minutes and 1 minute remain.</li>
+                        <li><strong>Auto-Submit:</strong> Your work will be automatically submitted when time runs out.</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h4>⚠️ Important Reminders</h4>
+                    <ul>
+                        <li>Do NOT close your browser or refresh the page during the examination</li>
+                        <li>Ensure you have a stable internet connection</li>
+                        <li>Download your progress regularly using the "Download Progress" button</li>
+                        <li>Read all prompts and instructions carefully before writing</li>
+                        <li>Manage your time wisely across all three tasks</li>
+                    </ul>
+                </div>
+
+                <div class="task-overview">
+                    <div class="task-card">
+                        <h4>📧 Task 1.1</h4>
+                        <p>Email to a Friend</p>
+                        <p>Write an informal email responding to suggestion notice.</p>
+                        <span class="word-req">~50 words</span>
+                    </div>
+
+                    <div class="task-card">
+                        <h4>📧 Task 1.2</h4>
+                        <p>Email to Management</p>
+                        <p>Write a formal email to the management about the same situation.</p>
+                        <span class="word-req">120-150 words</span>
+                    </div>
+
+                    <div class="task-card">
+                        <h4>💬 Task 2</h4>
+                        <p>Discussion Post</p>
+                        <p>Write your opinion for an online discussion forum.</p>
+                        <span class="word-req">180-200 words</span>
+                    </div>
+                </div>
+
+               <div class="checkbox-container" onclick="toggleCheckbox()">
+                    <input type="checkbox" id="agreeCheckbox">
+                    <label for="agreeCheckbox">I have read and understood all the instructions above, and I am ready to begin the examination.</label>
+                </div>
+
+                <div class="start-button-container">
+                    <button class="btn btn-primary" id="startButton" onclick="startExamination()" disabled style="font-size: 1.2em; padding: 18px 40px;">
+                        🚀 Start Examination
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXAM PAGE -->
+        <div class="page" id="examPage">
+            <div class="header">
+                <h1>✍️ Multilevel Winners - Writing Examination 5</h1>
+                <p>Two Tasks • Total Time: 1 Hour</p>
+            </div>
+
+            <div class="timer-section">
+                <div class="timer">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="timerDisplay">60:00</span>
+                </div>
+                <div class="word-count-summary">
+                    <div class="count-item">
+                        <small>Task 1.1:</small> <span id="task1_1Count">0</span> words
+                    </div>
+                    <div class="count-item">
+                        <small>Task 1.2:</small> <span id="task1_2Count">0</span> words
+                    </div>
+                    <div class="count-item">
+                        <small>Task 2:</small> <span id="task2Count">0</span> words
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="progress-indicator">
+                    <div class="progress-step active" id="step1" onclick="goToPage(1)">Task 1.1</div>
+                    <div class="progress-step" id="step2" onclick="goToPage(2)">Task 1.2</div>
+                    <div class="progress-step" id="step3" onclick="goToPage(3)">Task 2</div>
+                </div>
+
+                <!-- PAGE 1: TASK 1.1 -->
+                <div class="task-page active" id="page1">
+                    <div class="task-header">
+                        <h2>📧 TASK 1.1: Email to a Friend</h2>
+                        <p>You are a member for a music club. You received an email from the Music Club Coordinator.</p>
+                    </div>
+
+                    <div class="prompt-box">
+                        <span class="prompt-label">📬 EMAIL PROMPT</span>
+                        <div class="prompt-content">
+                            <p><strong>Dear Customer,</strong></p>
+                            <p>We are planning to introduce a new activity for our Music Club next month, and we would love to hear your suggestions. What kind of musical activity do you think would be enjoyable for most members? Should the activity focus on learning, performing, or simply enjoying music together? Would you like to take part in it? If yes, how?</p>
+                            <p>Your ideas will help us plan a fun and meaningful experience for everyone.</p>
+                            <p>Kind regards</p>
+                            <p>Music Club Coordinator.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtask">
+                        <div class="subtask-instruction">
+                            Write a short email to your friend who is also in the club. Say what musical activity you want the club to try and whether you want to join it
+                        </div>
+                        <div class="word-requirement">
+                            📝 Required: About 50 words
+                        </div>
+
+                        <div class="tips-section">
+                            <h3>💡 Writing Tips:</h3>
+                            <ul>
+                                <li>Use informal, friendly language</li>
+                                <li>Express your feelings about the letter</li>
+                                <li>Mention what should be improved</li>
+                                <li>Keep it brief and conversational</li>
+                            </ul>
+                        </div>
+
+                        <div class="writing-area">
+                            <textarea id="task1_1" placeholder="Start writing your email to your friend here..." style="min-height: 200px;"></textarea>
+                            <div class="char-counter">
+                                <span class="word-count" id="task1_1WordCount">0 words (Target: ~50)</span>
+                                <span class="char-count" id="task1_1CharCount">0 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" onclick="downloadWork()">💾 Download Progress</button>
+                        <button class="btn btn-primary" onclick="goToPage(2)">Next: Task 1.2 →</button>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: TASK 1.2 -->
+                <div class="task-page" id="page2">
+                    <div class="task-header">
+                        <h2>📧 TASK 1.2: Email to the Store about</h2>
+                        <p>You are a member for a music club. You received an email from the Music Club Coordinator.</p>
+                    </div>
+
+                    <div class="prompt-box">
+                        <span class="prompt-label">📬 EMAIL PROMPT</span>
+                        <div class="prompt-content">
+                            <p><strong>Dear Customer,</strong></p>
+                            <p>We are planning to introduce a new activity for our Music Club next month, and we would love to hear your suggestions. What kind of musical activity do you think would be enjoyable for most members? Should the activity focus on learning, performing, or simply enjoying music together? Would you like to take part in it? If yes, how?</p>
+                            <p>Your ideas will help us plan a fun and meaningful experience for everyone.</p>
+                            <p>Kind regards</p>
+                            <p>Music Club Coordinator.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtask">
+                        <div class="subtask-instruction">
+                            Write an email to the manager of the store. Tell them your thoughts about this and what you would like to do.
+                        </div>
+                        <div class="word-requirement">
+                            📝 Required: 120-150 words
+                        </div>
+
+                        <div class="tips-section">
+                            <h3>💡 Writing Tips:</h3>
+                            <ul>
+                                <li>Use formal, polite language</li>
+                                <li>Start with an appropriate greeting</li>
+                                <li>Give your own opinion</li>
+                                <li>Mention if you would like to participate and how</li>
+                                <li>End with a polite closing</li>
+                            </ul>
+                        </div>
+
+                        <div class="writing-area">
+                            <textarea id="task1_2" placeholder="Start writing your formal email to the club president here..." style="min-height: 300px;"></textarea>
+                            <div class="char-counter">
+                                <span class="word-count" id="task1_2WordCount">0 words (Target: 120-150)</span>
+                                <span class="char-count" id="task1_2CharCount">0 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" onclick="goToPage(1)">← Previous: Task 1.1</button>
+                        <button class="btn btn-secondary" onclick="downloadWork()">💾 Download Progress</button>
+                        <button class="btn btn-primary" onclick="goToPage(3)">Next: Task 2 →</button>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: TASK 2 -->
+                <div class="task-page" id="page3">
+                    <div class="task-header">
+                        <h2>💬 TASK 2: Online Discussion Post</h2>
+                        <p>Express your opinion on a given topic</p>
+                    </div>
+
+                    <div class="prompt-box">
+                        <span class="prompt-label">💭 DISCUSSION TOPIC</span>
+                        <div class="prompt-content">
+                            <p><strong>You are participating in an online discussion for language learners.</strong></p>
+                            <p>The topic is: <strong>“Some people believe that mobile phone use during lessons should be banned in schools.”</strong></p>
+                            <p>Write your response, giving reasons and examples.</p>
+                        </div>
+                    </div>
+
+                    <div class="word-requirement">
+                        📝 Required: 180-200 words
+                    </div>
+
+                    <div class="tips-section">
+                        <h3>💡 Writing Tips:</h3>
+                        <ul>
+                            <li>State your position clearly in the introduction</li>
+                            <li>Provide at least 2-3 reasons with supporting examples</li>
+                            <li>Consider mentioning both sides before stating your preference</li>
+                            <li>Use appropriate discussion language (e.g., "In my opinion...", "I believe...")</li>
+                            <li>Conclude by summarizing your main points</li>
+                            <li>Use paragraphs to organize your ideas</li>
+                        </ul>
+                    </div>
+
+                    <div class="writing-area">
+                        <textarea id="task2" placeholder="Start writing your discussion post here..." style="min-height: 350px;"></textarea>
+                        <div class="char-counter">
+                            <span class="word-count" id="task2WordCount">0 words (Target: 180-200)</span>
+                            <span class="char-count" id="task2CharCount">0 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" onclick="goToPage(2)">← Previous: Task 1.2</button>
+                        <button class="btn btn-secondary" onclick="downloadWork()">💾 Download Progress</button>
+                        <button class="btn btn-success" onclick="showSubmissionModal()">📤 Submit Examination</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMISSION MODAL -->
+    <div class="submission-modal" id="submissionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Review Your Submission</h2>
+                <p>Please review your work before final submission</p>
+            </div>
+
+            <div id="modalContent"></div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeSubmissionModal()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" onclick="finalSubmit()" style="flex: 1;">Confirm & Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAVED INDICATOR -->
+    <div class="saved-indicator" id="savedIndicator">
+        ✓ Work downloaded successfully!
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
